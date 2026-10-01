@@ -45,8 +45,6 @@ const newList = (letterIndex) => {
     const binary = ascii.toString(2).padStart(8, "0");
     console.log("binary: " + binary);
 
-    console.log("binary.substring(0,4): " + binary.substring(0,4));
-    console.log("binary.substring(4,8): " + binary.substring(4,8));
 
     return [binary.substring(0,4), binary.substring(4,8)];
 }
@@ -99,7 +97,11 @@ function Parity(currentWord){
 
         console.log("List so far: " + list);
         for (let i = 0; i < list.length; i++) {
-            parityVertical += (list[i][0] + list[i][1] + list[i][2] + list[i][3]) % 2;
+            parityVertical += (parseInt(list[i][0], 10) + parseInt(list[i][1], 10) + parseInt(list[i][2], 10) + parseInt(list[i][3], 10)) % 2;
+
+            console.log("Numbers used:");
+            console.log("list[i][0] + list[i][1] + list[i][2] + list[i][3]: " + ((list[i][0] + list[i][1] + list[i][2] + list[i][3])));
+            console.log(parseInt(list[i][0], 10) + parseInt(list[i][1], 10) + parseInt(list[i][2], 10) + parseInt(list[i][3], 10));
             let jtemp = 0;
             for (let j = 0; j < list.length; j++) {
                 jtemp += parseInt(list[j][i], 10);
@@ -127,7 +129,8 @@ function Invalidity(code){
     let invalid = 0;
     let j = 16;
     for (let i = 0; i < 16; i += 4) {
-        if(parseInt((code[i] + code[i + 1] + code[i + 2] + code[i + 3]), 10) % 2 !== j) {
+        if (((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2) !== parseInt(code[j], 10)) {
+            console.log("((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2): " + ((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2));
             console.log("code[i]: " + code[i]);
             console.log("1. invalid found: " + i);
             console.log("j: " + j);
@@ -136,8 +139,8 @@ function Invalidity(code){
         j++;
     }
     for (let k = 0; k < 4; k++) {
-        if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== j) {
-            console.log("K: " + k);
+        // if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== code[j]) {
+        if (((parseInt(code[k], 10) + parseInt(code[k + 4], 10) + parseInt(code[k + 8], 10) + parseInt(code[k + 12], 10)) % 2) !== parseInt(code[j], 10)) {
             console.log("code[k]: " + code[k]);
             console.log("2. invalid found: " + k);
             console.log("j: " + j);
