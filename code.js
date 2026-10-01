@@ -1,6 +1,6 @@
 const fs = require('node:fs');
 let totalData = "";
-let currentWord = 0;
+let currentWordIndex = 0;
 let word = ""
 
 fs.readFile('blank', 'utf8', (err, data) => {
@@ -10,68 +10,144 @@ fs.readFile('blank', 'utf8', (err, data) => {
     }
     console.log(data);// Your file text is here
     totalData = data.split(" ");
-    console.log(totalData);
 
-    for (let i = 0; i < 3; i++) {
-        updateWord();
+    updateWord();
+
+    for (let i = 0; i < totalData.length; i++) {
         console.log(word);
         Parity(word)
     }
+
+    fs.readFile('blank.2dp', 'utf8', (err, data) => {
+        if (err) {
+            console.error('Error reading file:', err);
+            return;
+        }
+        totalData = data.split(" ");
+        console.log("TotalData ALLLLL: " + totalData);
+        for (let i = 0; i < totalData.length - 1; i++) {
+            console.log("Total Data [i]: " + totalData[i])
+            console.log(Invalidity(totalData[i]));
+        }
+    });
 });
 
-
 function updateWord(){
-    word = totalData[currentWord];
-    currentWord++;
+    console.log("Total Data: " + totalData);
+    word = totalData[currentWordIndex];
+    currentWordIndex = currentWordIndex + 1;
 }
 
 const newList = (letterIndex) => {
-    const ascii = word.charCodeAt(letterIndex);
+    console.log("Letter: " + word[letterIndex - 1])
+    const ascii = word.charCodeAt(letterIndex - 1);
     console.log("ascii: " + ascii);
     const binary = ascii.toString(2).padStart(8, "0");
     console.log("binary: " + binary);
 
-    if (ascii.length === 3){
-        return [parseInt(binary.substring(1,2), 10).toString(2), Number(binary[0]).toString(2)];
+    console.log("binary.substring(0,4): " + binary.substring(0,4));
+    console.log("binary.substring(4,8): " + binary.substring(4,8));
+
+    return [binary.substring(0,4), binary.substring(4,8)];
+}
+
+function convert(array, parityVert, parityHorz){
+    let totalString = "";
+    // for (let i = array.length - 1; i >= 0; i--) {
+    for (let i = 0; i < array.length; i++) {
+        totalString += array[i];
     }
-    else {
-        return [Number(binary[1]).toString(2), Number(binary[0]).toString(2)];
-    }
+    totalString += parityVert + parityHorz;
+    return totalString;
 }
 
 
 function Parity(currentWord){
     let currentLetter = 1;
-    const s1 = currentWord[currentLetter].toString(16);
-    const s2 = currentWord[currentLetter].toString(16);
-    const overallList = new Array(4);
     const list = new Array(4);
     for (let i = 0; i < list.length; i++) {
         list[i] = "";
     }
-    let outer = 0;
-    while (currentLetter < currentWord.length) {
-        if (currentLetter + 1 < currentWord.length) {
+    console.log("CurrentWord: " + currentWord);
+    while (currentLetter <= currentWord.length) {
+        if (currentLetter + 1 <= currentWord.length) {
+            console.log("Option 1 chosen");
             let extra = newList(currentLetter);
-            list[0] = extra[1];
-            list[1] = extra[0];
+            console.log("extra: " + extra);
+            list[0] = extra[0];
+            list[1] = extra[1];
             currentLetter++;
             extra = newList(currentLetter);
-            list[2] = extra[1];
-            list[3] = extra[0];
+            list[2] = extra[0];
+            list[3] = extra[1];
             currentLetter++;
+            console.log("list: " + list);
         }
         else {
+            console.log("Option 2 chosen");
             let extra = newList(currentLetter);
-            list[0] = extra[1];
-            list[1] = extra[0];
+            list[0] = extra[0];
+            list[1] = extra[1];
             list[2] = "0000";
             list[3] = "0000";
             currentLetter++;
+            console.log("list: " + list);
         }
-        overallList[outer] = list;
-        outer++;
+
+        let parityVertical = "";
+        let parityHorizontal = "";
+
+        console.log("List so far: " + list);
+        for (let i = 0; i < list.length; i++) {
+            parityVertical += (list[i][0] + list[i][1] + list[i][2] + list[i][3]) % 2;
+            let jtemp = 0;
+            for (let j = 0; j < list.length; j++) {
+                jtemp += parseInt(list[j][i], 10);
+            }
+            parityHorizontal += (jtemp % 2);
+        }
+        console.log("Parity Horizontal: " + parityHorizontal);
+        console.log("Parity Vertical: " + parityVertical);
+
+        let lineToAdd = convert(list, parityVertical, parityHorizontal) + " ";
+        console.log("line to add: " + lineToAdd);
+        fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
+            if (err) {
+                console.error('An error occurred:', err);
+                return;
+            }
+            console.log('Text appended successfully!');
+        });
     }
-    console.log(outer);
+
     updateWord();
 }
+
+function Invalidity(code){
+    let invalid = 0;
+    let j = 16;
+    for (let i = 0; i < 16; i += 4) {
+        if(parseInt((code[i] + code[i + 1] + code[i + 2] + code[i + 3]), 10) % 2 !== j) {
+            console.log("code[i]: " + code[i]);
+            console.log("1. invalid found: " + i);
+            console.log("j: " + j);
+            invalid++;
+        }
+        j++;
+    }
+    for (let k = 0; k < 4; k++) {
+        if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== j) {
+            console.log("K: " + k);
+            console.log("code[k]: " + code[k]);
+            console.log("2. invalid found: " + k);
+            console.log("j: " + j);
+            invalid++;
+        }
+        j++;
+    }
+    return invalid;
+}
+
+
+
+
