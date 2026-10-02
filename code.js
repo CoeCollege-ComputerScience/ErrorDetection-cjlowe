@@ -32,6 +32,28 @@ fs.readFile('blank', 'utf8', (err, data) => {
     });
 });
 
+function rectify(invalidityPackage, line){
+    if (invalidityPackage[0] === false){
+        console.log("Too Corrupted");
+    }
+    else{
+        if (!(1 in invalidityPackage)) { // no errors
+            return line;
+        }
+        else if ((!(2 in invalidityPackage)) && (!(1 in invalidityPackage))) { // parity issue
+            if (invalidityPackage[1]){ //
+                
+            }
+            else{
+
+            }
+        }
+        else { // non parity issue
+
+        }
+    }
+}
+
 function updateWord(){
     console.log("Total Data: " + totalData);
     word = totalData[currentWordIndex];
@@ -41,7 +63,6 @@ function updateWord(){
 const newList = (letterIndex) => {
     console.log("Letter: " + word[letterIndex - 1])
     const ascii = word.charCodeAt(letterIndex - 1);
-    console.log("ascii: " + ascii);
     const binary = ascii.toString(2).padStart(8, "0");
     console.log("binary: " + binary);
 
@@ -69,9 +90,7 @@ function Parity(currentWord){
     console.log("CurrentWord: " + currentWord);
     while (currentLetter <= currentWord.length) {
         if (currentLetter + 1 <= currentWord.length) {
-            console.log("Option 1 chosen");
             let extra = newList(currentLetter);
-            console.log("extra: " + extra);
             list[0] = extra[0];
             list[1] = extra[1];
             currentLetter++;
@@ -82,7 +101,6 @@ function Parity(currentWord){
             console.log("list: " + list);
         }
         else {
-            console.log("Option 2 chosen");
             let extra = newList(currentLetter);
             list[0] = extra[0];
             list[1] = extra[1];
@@ -94,22 +112,14 @@ function Parity(currentWord){
 
         let parityVertical = "";
         let parityHorizontal = "";
-
-        console.log("List so far: " + list);
         for (let i = 0; i < list.length; i++) {
             parityVertical += (parseInt(list[i][0], 10) + parseInt(list[i][1], 10) + parseInt(list[i][2], 10) + parseInt(list[i][3], 10)) % 2;
-
-            console.log("Numbers used:");
-            console.log("list[i][0] + list[i][1] + list[i][2] + list[i][3]: " + ((list[i][0] + list[i][1] + list[i][2] + list[i][3])));
-            console.log(parseInt(list[i][0], 10) + parseInt(list[i][1], 10) + parseInt(list[i][2], 10) + parseInt(list[i][3], 10));
             let jtemp = 0;
             for (let j = 0; j < list.length; j++) {
                 jtemp += parseInt(list[j][i], 10);
             }
             parityHorizontal += (jtemp % 2);
         }
-        console.log("Parity Horizontal: " + parityHorizontal);
-        console.log("Parity Vertical: " + parityVertical);
 
         let lineToAdd = convert(list, parityVertical, parityHorizontal) + " ";
         console.log("line to add: " + lineToAdd);
@@ -126,14 +136,21 @@ function Parity(currentWord){
 }
 
 function Invalidity(code){
+    let validityPackage = new Array(3);
+    validityPackage[0] = false;
     let invalid = 0;
     let j = 16;
     for (let i = 0; i < 16; i += 4) {
         if (((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2) !== parseInt(code[j], 10)) {
-            console.log("((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2): " + ((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2));
             console.log("code[i]: " + code[i]);
-            console.log("1. invalid found: " + i);
+            console.log("1. invalid found on row: " + (i / 4));
             console.log("j: " + j);
+            try {
+                validityPackage[1] = i;
+            }
+            catch (error){
+                validityPackage[0] = false;
+            }
             invalid++;
         }
         j++;
@@ -142,13 +159,19 @@ function Invalidity(code){
         // if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== code[j]) {
         if (((parseInt(code[k], 10) + parseInt(code[k + 4], 10) + parseInt(code[k + 8], 10) + parseInt(code[k + 12], 10)) % 2) !== parseInt(code[j], 10)) {
             console.log("code[k]: " + code[k]);
-            console.log("2. invalid found: " + k);
+            console.log("2. invalid found on column: " + k);
             console.log("j: " + j);
+            try {
+                validityPackage[2] = k;
+            }
+            catch (error){
+                validityPackage[0] = false;
+            }
             invalid++;
         }
         j++;
     }
-    return invalid;
+    return validityPackage;
 }
 
 
