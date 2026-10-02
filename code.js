@@ -13,10 +13,10 @@ fs.readFile('blank', 'utf8', (err, data) => {
 
     updateWord();
 
-    for (let i = 0; i < totalData.length; i++) {
-        console.log(word);
-        Parity(word)
-    }
+    // for (let i = 0; i < totalData.length; i++) {
+    //     console.log(word);
+    //     Parity(word)
+    // }
 
     fs.readFile('blank.2dp', 'utf8', (err, data) => {
         if (err) {
@@ -24,34 +24,51 @@ fs.readFile('blank', 'utf8', (err, data) => {
             return;
         }
         totalData = data.split(" ");
-        console.log("TotalData ALLLLL: " + totalData);
-        for (let i = 0; i < totalData.length - 1; i++) {
+        console.log("TotalData ALL: " + totalData);
+        for (let i = 0; i < totalData.length; i++) {
             console.log("Total Data [i]: " + totalData[i])
             console.log(Invalidity(totalData[i]));
+            console.log(rectify(Invalidity(totalData[i]), totalData[i]));
         }
     });
 });
 
 function rectify(invalidityPackage, line){
+    let newLine = "";
+    console.log("Line given: " + line);
     if (invalidityPackage[0] === false){
         console.log("Too Corrupted");
+        throw new Error;
     }
     else{
-        if (!(1 in invalidityPackage)) { // no errors
+        if ((!(1 in invalidityPackage)) && (!(2 in invalidityPackage))) { // no errors
+            console.log("All Good!");
             return line;
         }
-        else if ((!(2 in invalidityPackage)) && (!(1 in invalidityPackage))) { // parity issue
-            if (invalidityPackage[1]){ //
-                
+        else if (((!(1 in invalidityPackage)) && ((2 in invalidityPackage))) || (((1 in invalidityPackage)) && (!(2 in invalidityPackage)))) { // parity issue
+            if (1 in invalidityPackage){
+                console.log("Parity Issue");
+                newLine += line.substring(0, 15);
+                newLine += line.substring(15, (16 + (+invalidityPackage[1] / 4)));
+                newLine += (+line[(16 + (+invalidityPackage[1] / 4))] + 1) % 2;
+                newLine += line.substring((17 + (+invalidityPackage[1] / 4)), 24);
             }
             else{
-
+                console.log("Parity Issue");
+                newLine += line.substring(0, 19);
+                newLine += line.substring(19, (20 + +invalidityPackage[2]));
+                newLine += ((+line[(20 + +invalidityPackage[2])]) + 1) % 2;
+                newLine += line.substring(21 + +invalidityPackage[2], 24);
             }
         }
         else { // non parity issue
-
+            console.log("Non-Parity Issue");
+            newLine += line.substring(0, invalidityPackage[1] + invalidityPackage[2]);
+            newLine += ((+line[+invalidityPackage[1] + +invalidityPackage[2]] + 1) % 2);
+            newLine += line.substring((invalidityPackage[1] + invalidityPackage[2] + 1), 24);
         }
     }
+    return newLine;
 }
 
 function updateWord(){
@@ -137,14 +154,11 @@ function Parity(currentWord){
 
 function Invalidity(code){
     let validityPackage = new Array(3);
-    validityPackage[0] = false;
+    validityPackage[0] = true;
     let invalid = 0;
     let j = 16;
     for (let i = 0; i < 16; i += 4) {
         if (((parseInt(code[i], 10) + parseInt(code[i + 1], 10) + parseInt(code[i + 2], 10) + parseInt(code[i + 3], 10)) % 2) !== parseInt(code[j], 10)) {
-            console.log("code[i]: " + code[i]);
-            console.log("1. invalid found on row: " + (i / 4));
-            console.log("j: " + j);
             try {
                 validityPackage[1] = i;
             }
@@ -158,9 +172,6 @@ function Invalidity(code){
     for (let k = 0; k < 4; k++) {
         // if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== code[j]) {
         if (((parseInt(code[k], 10) + parseInt(code[k + 4], 10) + parseInt(code[k + 8], 10) + parseInt(code[k + 12], 10)) % 2) !== parseInt(code[j], 10)) {
-            console.log("code[k]: " + code[k]);
-            console.log("2. invalid found on column: " + k);
-            console.log("j: " + j);
             try {
                 validityPackage[2] = k;
             }
