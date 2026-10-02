@@ -12,26 +12,42 @@ fs.readFile('blank', 'utf8', (err, data) => {
     totalData = data.split(" ");
 
     updateWord();
+    let lineToAdd = "";
 
-    // for (let i = 0; i < totalData.length; i++) {
-    //     console.log(word);
-    //     Parity(word)
-    // }
-
-    fs.readFile('blank.2dp', 'utf8', (err, data) => {
+    for (let i = 0; i < totalData.length; i++) {
+        console.log(word);
+        lineToAdd += Parity(word)
+    }
+    fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
         if (err) {
-            console.error('Error reading file:', err);
+            console.error('An error occurred:', err);
             return;
         }
-        totalData = data.split(" ");
-        console.log("TotalData ALL: " + totalData);
-        for (let i = 0; i < totalData.length; i++) {
-            console.log("Total Data [i]: " + totalData[i])
-            console.log(Invalidity(totalData[i]));
-            console.log(rectify(Invalidity(totalData[i]), totalData[i]));
-        }
+        console.log('Text appended successfully!');
+
+        fs.readFile('blank.2dp', 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading file:', err);
+                return;
+            }
+            totalData = data.split(" ");
+            console.log("TotalData ALL: " + totalData);
+            console.log(getFullMessage());
+        });
     });
 });
+
+function convertToString(code){
+    return (String.fromCharCode(parseInt(code.substring(0,8), 2)) + String.fromCharCode(parseInt(code.substring(8,16), 2)));
+}
+
+function getFullMessage(total){
+    let message = "";
+    for (let i = 0; i < totalData.length - 1; i++) {
+        message += convertToString(rectify(Invalidity(totalData[i]), totalData[i]));
+    }
+    return message;
+}
 
 function rectify(invalidityPackage, line){
     let newLine = "";
@@ -99,14 +115,16 @@ function convert(array, parityVert, parityHorz){
 
 
 function Parity(currentWord){
+    let overallLine = "";
     let currentLetter = 1;
     const list = new Array(4);
-    for (let i = 0; i < list.length; i++) {
-        list[i] = "";
-    }
+    // for (let i = 0; i < list.length; i++) {
+    //     list[i] = "";
+    // }
     console.log("CurrentWord: " + currentWord);
     while (currentLetter <= currentWord.length) {
         if (currentLetter + 1 <= currentWord.length) {
+            console.log("Option 1");
             let extra = newList(currentLetter);
             list[0] = extra[0];
             list[1] = extra[1];
@@ -118,6 +136,7 @@ function Parity(currentWord){
             console.log("list: " + list);
         }
         else {
+            console.log("Option 2");
             let extra = newList(currentLetter);
             list[0] = extra[0];
             list[1] = extra[1];
@@ -140,16 +159,10 @@ function Parity(currentWord){
 
         let lineToAdd = convert(list, parityVertical, parityHorizontal) + " ";
         console.log("line to add: " + lineToAdd);
-        fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
-            if (err) {
-                console.error('An error occurred:', err);
-                return;
-            }
-            console.log('Text appended successfully!');
-        });
+        overallLine += lineToAdd;
     }
-
     updateWord();
+    return overallLine;
 }
 
 function Invalidity(code){
