@@ -246,7 +246,25 @@ function Hamming(word) {
 }
 
 function readHam(code) {
-    p1 =
+    const p1 = (code[0] ^ code[2] ^ code[4] ^ code[6]);
+    const p2 = (code[1] ^ code[2] ^ code[5] ^ code[6]);
+    const p3 = (code[3] ^ code[4] ^ code[5] ^ code[6]);
+    const errorSpot = p3 * 4 + p2 * 2 + p1;
+    let newCode = "";
+    if (errorSpot === 0){
+        console.log("all good!");
+    }
+    else {
+        newString = "";
+        newString += code.substring(0, (errorSpot - 1));
+        newString += ((+code[errorSpot - 1] + 1) % 2);
+        newString += code.substring(errorSpot, 7);
+    }
+    return "" + code[2] + code[4] + code[5] + code[6];
+}
+
+function convertToStringHam(letterCode){
+    String.fromCharCode(parseInt(letterCode, 2))
 }
 
 
