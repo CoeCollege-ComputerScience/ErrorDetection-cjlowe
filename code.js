@@ -44,7 +44,7 @@ function convertToString(code){
 function getFullMessage(total){
     let message = "";
     for (let i = 0; i < totalData.length - 1; i++) {
-        message += convertToString(rectify(Invalidity(totalData[i]), totalData[i]));
+        message += convertToString(rectify(Invalidity(totalData[i], 1), totalData[i]));
     }
     return message;
 }
@@ -165,7 +165,8 @@ function Parity(currentWord){
     return overallLine;
 }
 
-function Invalidity(code){
+function Invalidity(code, process){
+    if (process === 1){
     let validityPackage = new Array(3);
     validityPackage[0] = true;
     let invalid = 0;
@@ -183,7 +184,6 @@ function Invalidity(code){
         j++;
     }
     for (let k = 0; k < 4; k++) {
-        // if(parseInt((code[k] + code[k + 4] + code[k + 8] + code[k + 12]), 10) % 2 !== code[j]) {
         if (((parseInt(code[k], 10) + parseInt(code[k + 4], 10) + parseInt(code[k + 8], 10) + parseInt(code[k + 12], 10)) % 2) !== parseInt(code[j], 10)) {
             try {
                 validityPackage[2] = k;
@@ -196,6 +196,57 @@ function Invalidity(code){
         j++;
     }
     return validityPackage;
+}
+    else if (process === 0){
+
+    }
+}
+
+fs.readFile('words', 'utf8', (err, data) => {
+    if (err) {
+        console.error('Error reading file:', err);
+        return;
+    }
+    console.log(data);// Your file text is here
+    totalData = data.split(" ");
+
+    updateWord();
+    let lineToAdd = "";
+
+    fs.appendFile('words.ham', lineToAdd, 'utf8', (err) => {
+        if (err) {
+            console.error('An error occurred:', err);
+            return;
+        }
+        console.log('Text appended successfully!');
+
+        fs.readFile('words.ham', 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading file:', err);
+                return;
+            }
+            totalData = data.split(" ");
+            console.log("TotalData ALL: " + totalData);
+
+        });
+    });
+});
+
+function Hamming(word) {
+    let totalWord = "";
+    for (let i = 0; i < word.length; i++){
+        let letter = newList(word[i]);
+        let p1 = ((+letter[0] + +letter[1] + +letter[3]) % 2);
+        let p2 = ((+letter[0] + +letter[2] + +letter[3]) % 2);
+        let p3 = ((+letter[1] + +letter[2] + +letter[3]) % 2);
+        let p4 = ((+letter[0] + +letter[1] + +letter[2] + +letter[3] + p1 + p2 + p3) % 2);
+        totalWord += ("" + p1 + p2 + letter[0] + p3 + letter[1] + letter[2] + letter[3] + " ");
+    }
+    return totalWord;
+}
+
+function readHam(code) {
+    p1 =
 }
 
 
