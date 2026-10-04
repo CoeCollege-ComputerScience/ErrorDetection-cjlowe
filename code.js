@@ -18,23 +18,58 @@ fs.readFile('blank', 'utf8', (err, data) => {
         console.log(word);
         lineToAdd += Parity(word)
     }
-    fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
+    // fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
+    //     if (err) {
+    //         console.error('An error occurred:', err);
+    //         return;
+    //     }
+    //     console.log('Text appended successfully!');
+    //
+    //     fs.readFile('blank.2dp', 'utf8', (err, data) => {
+    //         if (err) {
+    //             console.error('Error reading file:', err);
+    //             return;
+    //         }
+    //         totalData = data.split(" ");
+    //         console.log("TotalData ALL: " + totalData);
+    //         console.log(getFullMessage());
+    //     });
+    // });
+    console.log("Reached this point");
+    fs.readFile('words', 'utf8', (err, data) => {
+        console.log("Reached this point too");
         if (err) {
-            console.error('An error occurred:', err);
+            console.error('Error reading file:', err);
             return;
         }
-        console.log('Text appended successfully!');
+        console.log(data);// Your file text is here
+        totalData = data.split(" ");
+        let totalText = "";
+        for (let i = 0; i < totalData.length; i++){
+            totalText += Hamming(totalData[i]);
+        }
+        console.log("TotalText: " + totalText);
 
-        fs.readFile('blank.2dp', 'utf8', (err, data) => {
+        fs.appendFile('words.ham', totalText, 'utf8', (err) => {
             if (err) {
-                console.error('Error reading file:', err);
+                console.error('An error occurred:', err);
                 return;
             }
-            totalData = data.split(" ");
-            console.log("TotalData ALL: " + totalData);
-            console.log(getFullMessage());
+            console.log('Text appended successfully!');
+
+            fs.readFile('words.ham', 'utf8', (err, data) => {
+                if (err) {
+                    console.error('Error reading file:', err);
+                    return;
+                }
+                totalData = data.split(" ");
+                console.log("TotalData ALL: " + totalData);
+                console.log(readFileHam(totalData));
+
+            });
         });
     });
+
 });
 
 function convertToString(code){
@@ -58,7 +93,6 @@ function rectify(invalidityPackage, line){
     }
     else{
         if ((!(1 in invalidityPackage)) && (!(2 in invalidityPackage))) { // no errors
-            console.log("All Good!");
             return line;
         }
         else if (((!(1 in invalidityPackage)) && ((2 in invalidityPackage))) || (((1 in invalidityPackage)) && (!(2 in invalidityPackage)))) { // parity issue
@@ -100,6 +134,13 @@ const newList = (letterIndex) => {
     console.log("binary: " + binary);
 
 
+    return [binary.substring(0,4), binary.substring(4,8)];
+}
+
+function letterConvert(letter){
+    console.log("Letter: " + letter);
+    const binary = (letter.charCodeAt(0).toString(2)).padStart(8, "0");
+    console.log("Binary: " + binary);
     return [binary.substring(0,4), binary.substring(4,8)];
 }
 
@@ -202,47 +243,35 @@ function Invalidity(code, process){
     }
 }
 
-fs.readFile('words', 'utf8', (err, data) => {
-    if (err) {
-        console.error('Error reading file:', err);
-        return;
-    }
-    console.log(data);// Your file text is here
-    totalData = data.split(" ");
-
-    updateWord();
-    let lineToAdd = "";
-
-    fs.appendFile('words.ham', lineToAdd, 'utf8', (err) => {
-        if (err) {
-            console.error('An error occurred:', err);
-            return;
-        }
-        console.log('Text appended successfully!');
-
-        fs.readFile('words.ham', 'utf8', (err, data) => {
-            if (err) {
-                console.error('Error reading file:', err);
-                return;
-            }
-            totalData = data.split(" ");
-            console.log("TotalData ALL: " + totalData);
-
-        });
-    });
-});
-
 function Hamming(word) {
-    let totalWord = "";
-    for (let i = 0; i < word.length; i++){
-        let letter = newList(word[i]);
-        let p1 = ((+letter[0] + +letter[1] + +letter[3]) % 2);
-        let p2 = ((+letter[0] + +letter[2] + +letter[3]) % 2);
-        let p3 = ((+letter[1] + +letter[2] + +letter[3]) % 2);
-        let p4 = ((+letter[0] + +letter[1] + +letter[2] + +letter[3] + p1 + p2 + p3) % 2);
-        totalWord += ("" + p1 + p2 + letter[0] + p3 + letter[1] + letter[2] + letter[3] + " ");
+    let totalLine = "";
+        for (let i = 0; i < word.length; i++) {
+            for (let j = 0; j < 2; j++) {
+            let current = (letterConvert(word[i]))[j];
+            console.log("current letter binary: " + current);
+            let p1 = ((+current[0] + +current[1] + +current[3]) % 2);
+            console.log("p1: " + p1);
+            let p2 = ((+current[0] + +current[2] + +current[3]) % 2);
+            console.log("p2: " + p2);
+            let p3 = ((+current[1] + +current[2] + +current[3]) % 2);
+            console.log("p3: " + p3);
+            let p4 = ((+current[0] + +current[1] + +current[2] + +current[3] + p1 + p2 + p3) % 2);
+            console.log("p4: " + p4);
+            totalLine += ("" + p1 + p2 + current[0] + p3 + current[1] + current[2] + current[3] + p4);
+        }
+            totalLine += " ";
     }
-    return totalWord;
+    console.log("TotalLine: " + totalLine);
+    return (totalLine);
+}
+
+function readFileHam(file){
+    let totalMessage = "";
+    for (let i = 0; i < file.length - 1; i++){
+        totalMessage += (convertToStringHam(readHam(file[i].substring(0, 8)) + readHam(file[i].substring(8,16))));
+        console.log("addition: " + (convertToStringHam(readHam(file[i].substring(0, 8)) + readHam(file[i].substring(8,16)))));
+    }
+    return totalMessage;
 }
 
 function readHam(code) {
@@ -250,21 +279,21 @@ function readHam(code) {
     const p2 = (code[1] ^ code[2] ^ code[5] ^ code[6]);
     const p3 = (code[3] ^ code[4] ^ code[5] ^ code[6]);
     const errorSpot = p3 * 4 + p2 * 2 + p1;
-    let newCode = "";
     if (errorSpot === 0){
-        console.log("all good!");
+        return "" + code[2] + code[4] + code[5] + code[6];
     }
     else {
-        newString = "";
+        let newString = "";
         newString += code.substring(0, (errorSpot - 1));
         newString += ((+code[errorSpot - 1] + 1) % 2);
         newString += code.substring(errorSpot, 7);
+        return "" + newString[2] + newString[4] + newString[5] + newString[6];
     }
-    return "" + code[2] + code[4] + code[5] + code[6];
+
 }
 
 function convertToStringHam(letterCode){
-    String.fromCharCode(parseInt(letterCode, 2))
+    return String.fromCharCode(parseInt(letterCode, 2));
 }
 
 
