@@ -18,23 +18,23 @@ fs.readFile('blank', 'utf8', (err, data) => {
         console.log(word);
         lineToAdd += Parity(word)
     }
-    // fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
-    //     if (err) {
-    //         console.error('An error occurred:', err);
-    //         return;
-    //     }
-    //     console.log('Text appended successfully!');
-    //
-    //     fs.readFile('blank.2dp', 'utf8', (err, data) => {
-    //         if (err) {
-    //             console.error('Error reading file:', err);
-    //             return;
-    //         }
-    //         totalData = data.split(" ");
-    //         console.log("TotalData ALL: " + totalData);
-    //         console.log(getFullMessage());
-    //     });
-    // });
+     fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
+         if (err) {
+             console.error('An error occurred:', err);
+             return;
+         }
+         console.log('Text appended successfully!');
+
+         fs.readFile('blank.2dp', 'utf8', (err, data) => {
+             if (err) {
+                 console.error('Error reading file:', err);
+                 return;
+             }
+             totalData = data.split(" ");
+             console.log("TotalData ALL: " + totalData);
+             console.log(getFullMessage());
+         });
+     });
     console.log("Reached this point");
     fs.readFile('words', 'utf8', (err, data) => {
         console.log("Reached this point too");
