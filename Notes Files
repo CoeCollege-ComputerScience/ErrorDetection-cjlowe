@@ -1,0 +1,12 @@
+1001
+
+01001011001000
+1101
+temp + string.substring(4, string.length)
+11011011001000
+0100
+temp + string.substring(4, string.length)
+1001011001000
+0000
+temp + string.substring(4, string.length)
+011001000

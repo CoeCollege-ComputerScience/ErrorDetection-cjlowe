@@ -35,9 +35,8 @@ fs.readFile('blank', 'utf8', (err, data) => {
              console.log(getFullMessage());
          });
      });
-    console.log("Reached this point");
+
     fs.readFile('words', 'utf8', (err, data) => {
-        console.log("Reached this point too");
         if (err) {
             console.error('Error reading file:', err);
             return;
@@ -66,11 +65,68 @@ fs.readFile('blank', 'utf8', (err, data) => {
                 console.log("TotalData ALL: " + totalData);
                 console.log(readFileHam(totalData));
 
+                });
             });
         });
-    });
+
+        fs.readFile('CRCWords', 'utf8', (err, data) => {
+            if (err) {
+                console.error('Error reading file:', err);
+                return;
+            }
+            console.log(data);// Your file text is here
+            totalData = data.split(" ");
+            console.log("Total Data: " + totalData);
+            const CRCcode = 1001;
+            let totalText = CRCcode + " ";
+
+            for (let i = 0; i < totalData.length; i++){
+                for (let j = 0; j < totalData[i].length; j++){
+                    totalText += CRCconvert(letterConvert(totalData[i][j]), CRCcode) + " ";
+                }
+            }
+
+            fs.appendFile('CRCData', totalText, 'utf8', (err) => {
+                if (err) {
+                    console.error('An error occurred:', err);
+                    return;
+                }
+                console.log('Text appended successfully!');
+
+                fs.readFile('CRCData', 'utf8', (err, data) => {
+                    if (err) {
+                        console.error('Error reading file:', err);
+                        return;
+                    }
+                    totalData = data.split(" ");
+                    console.log("TotalData ALL: " + totalData);
+
+                });
+            });
+        });
 
 });
+
+function CRCconvert(code, key){
+    let line = (code[0] + code[1]);
+    const remainder = remainderDivide(line, key);
+    line += remainder;
+    return line;
+}
+
+function remainderDivide(code, key){
+    let varCode = code + "0".repeat(key.length - 1);
+    while (varCode.length <= key.length){
+        let tempPart = "";
+        for (let i = 0; i < key.length; i++){
+            tempPart += (+varCode[i] + +key[i]) % 2;
+        }
+        varCode = tempPart + varCode.substring(key.length,varCode.length);
+        varCode = varCode.replace(/^0+/, '');
+    }
+    console.log("Remainder: " + varCode);
+    return varCode
+}
 
 function convertToString(code){
     return (String.fromCharCode(parseInt(code.substring(0,8), 2)) + String.fromCharCode(parseInt(code.substring(8,16), 2)));
@@ -128,19 +184,16 @@ function updateWord(){
 }
 
 const newList = (letterIndex) => {
-    console.log("Letter: " + word[letterIndex - 1])
     const ascii = word.charCodeAt(letterIndex - 1);
     const binary = ascii.toString(2).padStart(8, "0");
-    console.log("binary: " + binary);
+
 
 
     return [binary.substring(0,4), binary.substring(4,8)];
 }
 
 function letterConvert(letter){
-    console.log("Letter: " + letter);
     const binary = (letter.charCodeAt(0).toString(2)).padStart(8, "0");
-    console.log("Binary: " + binary);
     return [binary.substring(0,4), binary.substring(4,8)];
 }
 
