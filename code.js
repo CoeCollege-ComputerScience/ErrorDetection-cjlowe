@@ -14,67 +14,67 @@ fs.readFile('blank', 'utf8', (err, data) => {
     updateWord();
     let lineToAdd = "";
 
-    for (let i = 0; i < totalData.length; i++) {
-        console.log(word);
-        lineToAdd += Parity(word)
-    }
-     fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
-         if (err) {
-             console.error('An error occurred:', err);
-             return;
-         }
-         console.log('Text appended successfully!');
-
-         fs.readFile('blank.2dp', 'utf8', (err, data) => {
-             if (err) {
-                 console.error('Error reading file:', err);
-                 return;
-             }
-             totalData = data.split(" ");
-             console.log("TotalData ALL: " + totalData);
-             console.log(getFullMessage());
-         });
-     });
-
-    fs.readFile('words', 'utf8', (err, data) => {
-        if (err) {
-            console.error('Error reading file:', err);
-            return;
-        }
-        console.log(data);// Your file text is here
-        totalData = data.split(" ");
-        let totalText = "";
-        for (let i = 0; i < totalData.length; i++){
-            totalText += Hamming(totalData[i]);
-        }
-        console.log("TotalText: " + totalText);
-
-        fs.appendFile('words.ham', totalText, 'utf8', (err) => {
-            if (err) {
-                console.error('An error occurred:', err);
-                return;
-            }
-            console.log('Text appended successfully!');
-
-            fs.readFile('words.ham', 'utf8', (err, data) => {
-                if (err) {
-                    console.error('Error reading file:', err);
-                    return;
-                }
-                totalData = data.split(" ");
-                console.log("TotalData ALL: " + totalData);
-                console.log(readFileHam(totalData));
-
-                });
-            });
-        });
+    // for (let i = 0; i < totalData.length; i++) {
+    //     console.log(word);
+    //     lineToAdd += Parity(word)
+    // }
+    //  fs.appendFile('blank.2dp', lineToAdd, 'utf8', (err) => {
+    //      if (err) {
+    //          console.error('An error occurred:', err);
+    //          return;
+    //      }
+    //      console.log('Text appended successfully!');
+    //
+    //      fs.readFile('blank.2dp', 'utf8', (err, data) => {
+    //          if (err) {
+    //              console.error('Error reading file:', err);
+    //              return;
+    //          }
+    //          totalData = data.split(" ");
+    //          console.log("TotalData ALL: " + totalData);
+    //          console.log(getFullMessage());
+    //      });
+    //  });
+    //
+    // fs.readFile('words', 'utf8', (err, data) => {
+    //     if (err) {
+    //         console.error('Error reading file:', err);
+    //         return;
+    //     }
+    //     console.log(data);// Your file text is here
+    //     totalData = data.split(" ");
+    //     let totalText = "";
+    //     for (let i = 0; i < totalData.length; i++){
+    //         totalText += Hamming(totalData[i]);
+    //     }
+    //     console.log("TotalText: " + totalText);
+    //
+    //     fs.appendFile('words.ham', totalText, 'utf8', (err) => {
+    //         if (err) {
+    //             console.error('An error occurred:', err);
+    //             return;
+    //         }
+    //         console.log('Text appended successfully!');
+    //
+    //         fs.readFile('words.ham', 'utf8', (err, data) => {
+    //             if (err) {
+    //                 console.error('Error reading file:', err);
+    //                 return;
+    //             }
+    //             totalData = data.split(" ");
+    //             console.log("TotalData ALL: " + totalData);
+    //             console.log(readFileHam(totalData));
+    //
+    //             });
+    //         });
+    //     });
 
         fs.readFile('CRCWords', 'utf8', (err, data) => {
             if (err) {
                 console.error('Error reading file:', err);
                 return;
             }
-            console.log(data);// Your file text is here
+            console.log("CRC Data: " + data);// Your file text is here
             totalData = data.split(" ");
             console.log("Total Data: " + totalData);
             const CRCcode = 1001;
@@ -82,6 +82,7 @@ fs.readFile('blank', 'utf8', (err, data) => {
 
             for (let i = 0; i < totalData.length; i++){
                 for (let j = 0; j < totalData[i].length; j++){
+                    console.log("Starting Converting Letter: " + totalData[i][j]);
                     totalText += CRCconvert(letterConvert(totalData[i][j]), CRCcode) + " ";
                 }
             }
@@ -108,21 +109,39 @@ fs.readFile('blank', 'utf8', (err, data) => {
 });
 
 function CRCconvert(code, key){
+    console.log("Code!!!!!!!!!!!!: " + code);
+    key = String(key);
+    console.log("KEYYYYYYY: " + key);
+    console.log("key length: " + key.length);
     let line = (code[0] + code[1]);
-    const remainder = remainderDivide(line, key);
+    line = String(line);
+    console.log("Original CRC Line: " + line);
+    let newLine = line;
+    for (let q = 0; q < (key.length - 1); q++){
+        newLine += "0";
+        console.log("NewLine got a 0");
+    }
+    console.log("newLine Status: " + newLine);
+    const remainder = remainderDivide(newLine, key);
+    console.log("Remainder: " + remainder);
+    console.log("Line Status: " + line);
     line += remainder;
+    console.log("Line being returned: " + line);
     return line;
 }
 
-function remainderDivide(code, key){
-    let varCode = code + "0".repeat(key.length - 1);
-    while (varCode.length <= key.length){
+function remainderDivide(varCode, key){
+    console.log("Code being calced for remainder: " + varCode);
+    console.log("Key: " + key);
+    while (varCode.length >= key.length){
         let tempPart = "";
         for (let i = 0; i < key.length; i++){
             tempPart += (+varCode[i] + +key[i]) % 2;
         }
         varCode = tempPart + varCode.substring(key.length,varCode.length);
+        console.log("1. " + varCode);
         varCode = varCode.replace(/^0+/, '');
+        console.log("2. " + varCode);
     }
     console.log("Remainder: " + varCode);
     return varCode
@@ -177,6 +196,16 @@ function rectify(invalidityPackage, line){
     return newLine;
 }
 
+function CRCCheck(line, generator){
+    if (remainderDivide(line, generator).length === 0){
+
+    }
+    else {
+        console.log("Corruption Happened");
+        return false;
+    }
+}
+
 function updateWord(){
     console.log("Total Data: " + totalData);
     word = totalData[currentWordIndex];
@@ -218,7 +247,6 @@ function Parity(currentWord){
     console.log("CurrentWord: " + currentWord);
     while (currentLetter <= currentWord.length) {
         if (currentLetter + 1 <= currentWord.length) {
-            console.log("Option 1");
             let extra = newList(currentLetter);
             list[0] = extra[0];
             list[1] = extra[1];
@@ -230,7 +258,6 @@ function Parity(currentWord){
             console.log("list: " + list);
         }
         else {
-            console.log("Option 2");
             let extra = newList(currentLetter);
             list[0] = extra[0];
             list[1] = extra[1];
@@ -301,15 +328,10 @@ function Hamming(word) {
         for (let i = 0; i < word.length; i++) {
             for (let j = 0; j < 2; j++) {
             let current = (letterConvert(word[i]))[j];
-            console.log("current letter binary: " + current);
             let p1 = ((+current[0] + +current[1] + +current[3]) % 2);
-            console.log("p1: " + p1);
             let p2 = ((+current[0] + +current[2] + +current[3]) % 2);
-            console.log("p2: " + p2);
             let p3 = ((+current[1] + +current[2] + +current[3]) % 2);
-            console.log("p3: " + p3);
             let p4 = ((+current[0] + +current[1] + +current[2] + +current[3] + p1 + p2 + p3) % 2);
-            console.log("p4: " + p4);
             totalLine += ("" + p1 + p2 + current[0] + p3 + current[1] + current[2] + current[3] + p4);
         }
             totalLine += " ";
